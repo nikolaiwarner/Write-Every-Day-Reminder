@@ -1,0 +1,14 @@
+h1, div {
+  font-family: Helvetica;
+  font-size: 15px;
+  padding-bottom: 10px;
+}
+
+.title {
+  border-bottom: 1px solid #ddd;
+}
+
+#status{
+  text-align: center;
+  color: #999;
+}

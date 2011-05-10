@@ -1,0 +1,28 @@
+<link href="stylesheet.css" media="screen" rel="stylesheet" type="text/css" /> 
+
+<p>
+  <img src='icon.png' style='float:left; padding: 5px;' />
+
+  <h1>You should write today.</h1>
+   
+  <br/>
+  <span id='time_left'></span>
+</p>
+
+
+
+
+
+<script src="write_every_day_reminder.js" type="text/javascript"></script>
+
+<script>
+  // set the time remaining text
+  var current_time = new Date();
+  var time_left_hours = 24 - current_time.getHours();
+	var time_left_text = "Less than " + time_left_hours + " hour";
+  time_left_text = (time_left_hours === 1) ? time_left_text + " remains." : time_left_text + "s remain.";
+  document.getElementById('time_left').innerHTML = time_left_text;
+  
+  // close on click
+  document.addEventListener('click', function(){ window.close(); });
+</script>

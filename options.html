@@ -1,0 +1,56 @@
+<html>
+<head><title>Options</title>
+<link href="stylesheet.css" media="screen" rel="stylesheet" type="text/css" /> 
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+  function save_options() {
+  
+    localStorage["show_badge"] = $('#show_badge').is(':checked');
+    localStorage["show_notification"] = $('#show_notification').is(':checked');
+    localStorage["rss_url"] = $('#rss_url').val();
+  
+    // Update status to let user know options were saved.
+    $("#status").html("Options Saved.");
+    setTimeout(function() {
+      $("#status").html("");
+    }, 4000);
+  }
+  
+  
+  function restore_options() {
+    $('#show_badge').attr('checked', (localStorage["show_badge"] === "true"));
+    $('#show_notification').attr('checked', (localStorage["show_notification"] === "true"));
+    $('#rss_url').val(localStorage["rss_url"]);
+  }
+
+</script>
+
+</head>
+<body onload="restore_options()">
+
+<div id='status'></div>
+
+<h1 class='title'>
+  Options
+</h1>
+
+<div>
+  Your 750Words RSS URL: <input type="text" id="rss_url" style='width:300px' />
+</div>
+
+<div>
+  <input type="checkbox" id="show_badge" value="true" /> Show Current Streak
+</div>
+
+<div>
+  <input type="checkbox" id="show_notification" value="false" /> Show Reminder Desktop Notification
+</div>
+
+<div>
+  <button onclick="save_options()">Save</button>
+</div>
+
+</body>
+</html>
