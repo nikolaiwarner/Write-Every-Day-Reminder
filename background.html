@@ -17,7 +17,11 @@ $(document).ready(function(){
   
   // clickable icon
   chrome.browserAction.onClicked.addListener(function(tab) {
-    chrome.tabs.create({url: 'http://750words.com'});
+    if (write_every_day_reminder.available) {
+      chrome.tabs.create({url: 'http://750words.com'});
+    } else {
+      chrome.tabs.create({url: 'options.html'});
+    }
   });
   
 });

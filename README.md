@@ -13,7 +13,6 @@ A Chrome extension to remind you to write every day on 750words.com.
 ## Features
 
 * Daily success indicator
-
 * Desktop notification reminders
 
 ## Coming soon

@@ -1,7 +1,6 @@
 var write_every_day_reminder = {
 
-//http://750words.com/api/rss/70f3f53820b5b2f8140ee523923a87c9
-
+  available: true,
   refresh_rate: 30 * 60 * 1000, // once every half hour
   default_rss_url: 'http://750words.com/api/rss/[your id]',
   
@@ -16,48 +15,56 @@ var write_every_day_reminder = {
       $.ajax({  
         url: localStorage['rss_url'],  
         success: function(data) { 
+          self.available = true;
           self.rss_data_response(data);
-        }  
+        },
+        error: function() {
+          self.available = false;
+          self.update_interface();
+        }
       });
     }
   },
   
   
   rss_data_response: function(data) {
-    // Streak
-/*
-    var latest_item_description = $($("item", data.responseText)[0]).find('description').html();
-    if (latest_item_description) {
+    var a_day_of_miliseconds = 60 * 60 * 24 * 1000;
+    
+    var latest_item_description = $(data).find('rss channel item:first description').text();
+    if (latest_item_description.indexOf("finished") != -1) { // did you actually finish or just get started?
+      
+      
+      // Streak
       var regex = new RegExp("is on a (.*) day writing streak", "g");
       var streak_array = regex.exec(latest_item_description);
-      console.log(streak_array);
+//      console.log(latest_item_description, streak_array);
       if (streak_array) {
         localStorage['current_streak'] = parseInt(streak_array[1], 10);
+      } else {
+        localStorage['current_streak'] = "0";
       }
-    }
-*/
-    
-    
-    // Get Progress Today
-    var a_day_of_miliseconds = 60 * 60 * 24 * 1000;
-    var latest_item_pubdate = $($("item", data.responseText)[0]).find('pubdate').html();
-    var latest_date = new Date(latest_item_pubdate);
-    
-    var midnight = new Date(); 
-    midnight.setDate(midnight.getDate() + 1);
-    midnight.setHours(0); 
-    midnight.setMinutes(0); 
-    midnight.setSeconds(0);
-    
-    if (midnight.valueOf() - latest_date.valueOf() < a_day_of_miliseconds) {
-      localStorage['progressed_today'] = 'true';
+      
+      
+      var finished_date = new Date($(data).find('rss channel item:first pubDate').text());
+      
+      var midnight = new Date(); 
+      midnight.setDate(midnight.getDate() + 1);
+      midnight.setHours(0); 
+      midnight.setMinutes(0); 
+      midnight.setSeconds(0);
+      
+      console.log(midnight.valueOf() - finished_date.valueOf() );
+      
+      if (midnight.valueOf() - finished_date.valueOf() < a_day_of_miliseconds) { // did you finish within today?
+        localStorage['progressed_today'] = 'true';
+      } else {
+        localStorage['progressed_today'] = 'false';
+      } 
     } else {
       localStorage['progressed_today'] = 'false';
     }
     
     
-    
-       
     // Show notification
     if (localStorage['show_notification'] === 'true' && localStorage['progressed_today'] === 'false') {
       var notification = webkitNotifications.createHTMLNotification('notification.html');
@@ -74,20 +81,26 @@ var write_every_day_reminder = {
   update_interface: function() {
     var self = this;
     
-    // Update Badge
-    if (localStorage['show_badge'] === 'true') {
-      chrome.browserAction.setBadgeText({text: localStorage['current_streak']});
-    } else {
-      chrome.browserAction.setBadgeText({text: ""});
-    }
+    if (this.available) {
+      // Update Badge
+      if (localStorage['show_badge'] === 'true') {
+        chrome.browserAction.setBadgeText({text: localStorage['current_streak']});
+      } else {
+        chrome.browserAction.setBadgeText({text: ""});
+      }
+      
+      // Update Progress
     
-    // Update Progress
-    if (localStorage['progressed_today'] === 'true') {
-      chrome.browserAction.setIcon({path: "icon_success.png"});
-      chrome.browserAction.setBadgeBackgroundColor({color:[0,255,0,255]});
+      if (localStorage['progressed_today'] === 'true') {
+        chrome.browserAction.setIcon({path: "icon_success.png"});
+        chrome.browserAction.setBadgeBackgroundColor({color:[0,255,0,255]});
+      } else {
+        chrome.browserAction.setIcon({path: "icon.png"});
+        chrome.browserAction.setBadgeBackgroundColor({color:[255,0,0,255]});
+      }
     } else {
-      chrome.browserAction.setIcon({path: "icon.png"});
-      chrome.browserAction.setBadgeBackgroundColor({color:[255,0,0,255]});
+      chrome.browserAction.setIcon({path: "icon_unavailable.png"});
+      chrome.browserAction.setBadgeText({text: ""});
     }
   },
   
