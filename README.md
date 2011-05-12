@@ -7,7 +7,7 @@ A Chrome extension to remind you to write every day on 750words.com.
 
 * Install the extension:
     <https://chrome.google.com/webstore/detail/gejilmamfifbghncgenoiabledhhkbgl>
-* Find you RSS url:
+* Find your RSS url:
     <http://750words.tumblr.com/post/507002257/rss-feeds>
 * Write away!
 
