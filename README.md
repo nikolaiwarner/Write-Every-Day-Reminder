@@ -18,7 +18,7 @@ A Chrome extension to remind you to write every day on 750words.com.
 * Daily success indicator
 * Desktop notification reminders
 
-## Coming soon
+## Someday Maybe
 
 * A streak count display
 * Variable time zone setting

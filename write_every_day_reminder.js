@@ -3,9 +3,8 @@ var write_every_day_reminder = {
   available: true,
   refresh_rate: 30 * 60 * 1000, // once every half hour
   default_rss_url: 'http://750words.com/api/rss/[your id]',
-  
+
   refresh_timer: undefined,
-  
 
   fetch_from_rss_url: function() {
     var self = this;
@@ -25,15 +24,15 @@ var write_every_day_reminder = {
       });
     }
   },
-  
-  
+
+
   rss_data_response: function(data) {
     var a_day_of_miliseconds = 60 * 60 * 24 * 1000;
-    
+
     var latest_item_description = $(data).find('rss channel item:first description').text();
     if (latest_item_description.indexOf("finished") != -1) { // did you actually finish or just get started?
-      
-      
+
+
       // Streak
       var regex = new RegExp("is on a (.*) day writing streak", "g");
       var streak_array = regex.exec(latest_item_description);
@@ -43,18 +42,18 @@ var write_every_day_reminder = {
       } else {
         localStorage['current_streak'] = "0";
       }
-      
-      
+
+
       var finished_date = new Date($(data).find('rss channel item:first pubDate').text());
-      
+
       var midnight = new Date(); 
       midnight.setDate(midnight.getDate() + 1);
       midnight.setHours(0); 
       midnight.setMinutes(0); 
       midnight.setSeconds(0);
-      
+
       console.log(midnight.valueOf() - finished_date.valueOf() );
-      
+
       if (midnight.valueOf() - finished_date.valueOf() < a_day_of_miliseconds) { // did you finish within today?
         localStorage['progressed_today'] = 'true';
       } else {
@@ -63,8 +62,8 @@ var write_every_day_reminder = {
     } else {
       localStorage['progressed_today'] = 'false';
     }
-    
-    
+
+
     // Show notification
     if (localStorage['show_notification'] === 'true' && localStorage['progressed_today'] === 'false') {
       var notification = webkitNotifications.createHTMLNotification('notification.html');
@@ -73,14 +72,14 @@ var write_every_day_reminder = {
         notification.cancel();
       }, '20000');
     }
-    
+
     this.update_interface();
   },
-  
-  
+
+
   update_interface: function() {
     var self = this;
-    
+
     if (this.available) {
       // Update Badge
       if (localStorage['show_badge'] === 'true') {
@@ -88,9 +87,8 @@ var write_every_day_reminder = {
       } else {
         chrome.browserAction.setBadgeText({text: ""});
       }
-      
+
       // Update Progress
-    
       if (localStorage['progressed_today'] === 'true') {
         chrome.browserAction.setIcon({path: "icon_success.png"});
         chrome.browserAction.setBadgeBackgroundColor({color:[0,255,0,255]});
@@ -103,8 +101,8 @@ var write_every_day_reminder = {
       chrome.browserAction.setBadgeText({text: ""});
     }
   },
-  
-  
+
+
   schedule_refresh: function() {
     var self = this;
     if (this.refresh_timer) {
@@ -112,8 +110,8 @@ var write_every_day_reminder = {
     }
     this.refresh_timer = setInterval(function(){ self.update(); }, this.refresh_rate);
   },
-  
-  
+
+
   update: function() {
     // A simple scrape of the rss will do for now.
     // Perhaps someday there will be an official 750 words api.

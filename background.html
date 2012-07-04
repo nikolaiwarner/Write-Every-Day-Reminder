@@ -4,7 +4,7 @@
 <script>
 $(document).ready(function(){
   write_every_day_reminder.init();
-  
+
   // listen_for_storage_updates
   window.addEventListener("storage", function(event){
     if (event.key === 'rss_url') {
@@ -14,7 +14,7 @@ $(document).ready(function(){
       write_every_day_reminder.update_interface();
     }
   }, false);
-  
+
   // clickable icon
   chrome.browserAction.onClicked.addListener(function(tab) {
     if (write_every_day_reminder.available) {

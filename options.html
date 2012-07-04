@@ -6,19 +6,19 @@
 <script type="text/javascript">
 
   function save_options() {
-  
+
     localStorage["show_badge"] = $('#show_badge').is(':checked');
     localStorage["show_notification"] = $('#show_notification').is(':checked');
     localStorage["rss_url"] = $('#rss_url').val();
-  
+
     // Update status to let user know options were saved.
     $("#status").html("Options Saved.");
     setTimeout(function() {
       $("#status").html("");
     }, 4000);
   }
-  
-  
+
+
   function restore_options() {
     $('#show_badge').attr('checked', (localStorage["show_badge"] === "true"));
     $('#show_notification').attr('checked', (localStorage["show_notification"] === "true"));
