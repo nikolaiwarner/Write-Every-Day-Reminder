@@ -27,10 +27,10 @@ var write_every_day_reminder = {
 
 
   rss_data_response: function(data) {
-    var a_day_of_miliseconds = 60 * 60 * 24 * 1000;
+    var a_day_of_seconds = 60 * 60 * 24;
 
     var latest_item_description = $(data).find('rss channel item:first description').text();
-    if (latest_item_description.indexOf("finished") != -1) { // did you actually finish or just get started?
+    if (latest_item_description.indexOf("finished") !== -1) { // did you actually finish or just get started?
 
 
       // Streak
@@ -45,16 +45,7 @@ var write_every_day_reminder = {
 
 
       var finished_date = new Date($(data).find('rss channel item:first pubDate').text());
-
-      var midnight = new Date(); 
-      midnight.setDate(midnight.getDate() + 1);
-      midnight.setHours(0); 
-      midnight.setMinutes(0); 
-      midnight.setSeconds(0);
-
-      console.log(midnight.valueOf() - finished_date.valueOf() );
-
-      if (midnight.valueOf() - finished_date.valueOf() < a_day_of_miliseconds) { // did you finish within today?
+      if (moment(finished_date).diff(moment().eod(), "seconds") < a_day_of_seconds) { // did you finish within today?
         localStorage['progressed_today'] = 'true';
       } else {
         localStorage['progressed_today'] = 'false';
