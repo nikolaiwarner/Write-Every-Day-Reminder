@@ -32,7 +32,6 @@ var write_every_day_reminder = {
     var latest_item_description = $(data).find('rss channel item:first description').text();
     if (latest_item_description.indexOf("finished") !== -1) { // did you actually finish or just get started?
 
-
       // Streak
       var regex = new RegExp("is on a (.*) day writing streak", "g");
       var streak_array = regex.exec(latest_item_description);
@@ -45,6 +44,8 @@ var write_every_day_reminder = {
 
 
       var finished_date = new Date($(data).find('rss channel item:first pubDate').text());
+      localStorage['last_finished_date'] = finished_date;
+
       if (moment(finished_date).diff(moment().eod(), "seconds") < a_day_of_seconds) { // did you finish within today?
         localStorage['progressed_today'] = 'true';
       } else {
@@ -53,7 +54,6 @@ var write_every_day_reminder = {
     } else {
       localStorage['progressed_today'] = 'false';
     }
-
 
     // Show notification
     if (localStorage['show_notification'] === 'true' && localStorage['progressed_today'] === 'false') {
