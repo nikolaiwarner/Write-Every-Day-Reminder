@@ -4,7 +4,7 @@
   "version": "1.0.1",
   "description": "A Chrome extension to remind you to write every day on 750words.com.",
   "background": {
-    "scripts": ["jquery-1.7.2.min.js", "moment.min.js", "write_every_day_reminder.js", "background.js"]
+    "scripts": ["jquery-1.7.2.min.js", "moment.min.js", "write_every_day_reminder.js"]
   },
   "browser_action": {
     "default_icon": "icon.png"

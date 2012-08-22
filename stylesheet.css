@@ -12,3 +12,8 @@ h1, div {
   text-align: center;
   color: #999;
 }
+
+.bottom {
+  position: absolute;
+  bottom: 10px;
+}

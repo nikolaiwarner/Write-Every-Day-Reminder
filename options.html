@@ -6,38 +6,9 @@
   
   <script src="jquery-1.7.2.min.js" type="text/javascript"></script>
   <script src="moment.min.js" type="text/javascript"></script>
-  <script type="text/javascript">
-  
-    function save_options() {
-  
-      localStorage["show_badge"] = $('#show_badge').is(':checked');
-      localStorage["show_notification"] = $('#show_notification').is(':checked');
-      localStorage["rss_url"] = $('#rss_url').val();
-  
-      // Update status to let user know options were saved.
-      $("#status").html("Options Saved.");
-      setTimeout(function() {
-        $("#status").html("");
-      }, 4000);
-    }
-  
-    function restore_options() {
-      $('#show_badge').attr('checked', (localStorage["show_badge"] === "true"));
-      $('#show_notification').attr('checked', (localStorage["show_notification"] === "true"));
-      $('#rss_url').val(localStorage["rss_url"]);
-  
-      update_advanced_info();
-    }
-  
-    function update_advanced_info() {
-      var info = "Last Finished Date: " + moment(new Date(localStorage["last_finished_date"]));
-      $('.advanced_info').html(info);
-    }
-    setTimeout(update_advanced_info, 1000);
-  </script>
-  
+  <script src="write_every_day_reminder.js" type="text/javascript"></script>
 </head>
-<body onload="restore_options()">
+<body class='options'>
 
   <div id='status'></div>
   
@@ -46,7 +17,7 @@
   </h1>
   
   <div>
-    Your 750Words RSS URL: <input type="text" id="rss_url" style='width:300px' />
+    Your 750Words RSS URL: <input type="text" id="rss_url" style='width:300px' placeholder="http://750words.com/api/rss/[your id]" />
   </div>
   
   <div>
@@ -58,11 +29,10 @@
   </div>
   
   <div>
-    <button onclick="save_options()">Save</button>
+    <button class='save_button'>Save</button>
   </div>
 
-  <div class='advanced_info'>
-  ...
+  <div class='bottom advanced_info'>
   </div>
 </body>
 </html>

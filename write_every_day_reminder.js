@@ -27,8 +27,6 @@ var write_every_day_reminder = {
 
 
   rss_data_response: function(data) {
-    var a_day_of_seconds = 60 * 60 * 24;
-
     var latest_item_description = $(data).find('rss channel item:first description').text();
     if (latest_item_description.indexOf("finished") !== -1) { // did you actually finish or just get started?
 
@@ -46,7 +44,7 @@ var write_every_day_reminder = {
       var finished_date = new Date($(data).find('rss channel item:first pubDate').text());
       localStorage['last_finished_date'] = finished_date;
 
-      if (moment(finished_date).diff(moment().eod(), "seconds") < a_day_of_seconds) { // did you finish within today?
+      if (this.finished_today()) { // did you finish within today?
         localStorage['progressed_today'] = 'true';
       } else {
         localStorage['progressed_today'] = 'false';
@@ -61,7 +59,7 @@ var write_every_day_reminder = {
       notification.show();
       setTimeout(function(){
         notification.cancel();
-      }, '20000');
+      }, '10000');
     }
 
     this.update_interface();
@@ -109,8 +107,92 @@ var write_every_day_reminder = {
     this.fetch_from_rss_url();
   },
 
-  init: function() {
-    this.schedule_refresh();
-    this.update();
+  save_options: function() {
+    localStorage["show_badge"] = $('#show_badge').is(':checked');
+    localStorage["show_notification"] = $('#show_notification').is(':checked');
+    localStorage["rss_url"] = $('#rss_url').val();
+
+    // Update status to let user know options were saved.
+    $("#status").html("Options Saved.");
+    setTimeout(function() {
+      $("#status").html("");
+    }, 4000);
+  },
+
+  restore_options: function() {
+    $('#show_badge').attr('checked', (localStorage["show_badge"] === "true"));
+    $('#show_notification').attr('checked', (localStorage["show_notification"] === "true"));
+    $('#rss_url').val(localStorage["rss_url"]);
+
+    this.update_advanced_info();
+  },
+
+  update_advanced_info: function() {
+    var info = "<br>";
+    info = info + "Last Finished Writing: " + this.last_finished_date().fromNow();
+    info = info + "<br>";
+    info = info + "Finished Today: " + (this.finished_today() ? "Yes" : "No");
+    info = info + "<br>";
+    info = info + "Time remaining today: " + this.time_left_today();
+    info = info + "<br>";
+    info = info + "Current Streak: " + localStorage["current_streak"];
+
+    $('.advanced_info').html(info);
+  },
+
+  time_left_today: function() {
+    return moment.duration(moment().eod().diff(moment(), 'seconds'), 'seconds').humanize();
+    //return moment().eod().diff(moment(), 'hours') + ' hours ' + moment().eod().diff(moment(), 'minutes') + ' minutes'
+  },
+
+  last_finished_date: function() {
+    return moment(new Date(localStorage["last_finished_date"]));
+  },
+
+  a_day_of_seconds: function() {
+    return 60 * 60 * 24;
+  },
+
+  finished_today: function() {
+    return moment().eod().diff(moment(this.last_finished_date(), "seconds")) < this.a_day_of_seconds();
   }
 };
+
+
+
+// Events
+document.addEventListener('DOMContentLoaded', function () {
+  if ($('.options').length > 0) {
+    // Options
+    $('.save_button').click(write_every_day_reminder.save_options);
+    write_every_day_reminder.restore_options();
+    setInterval(function() { write_every_day_reminder.update_advanced_info() }, 10000);
+  } else if ($('.notification').length > 0) {
+    // Notification
+    $('#time_left').html("Less than " + write_every_day_reminder.time_left_today() + " left to write today.");
+    $(document).click(window.close);
+  } else {
+    // Background
+    write_every_day_reminder.schedule_refresh();
+    write_every_day_reminder.update();
+    
+    // listen_for_storage_updates
+    window.addEventListener("storage", function(event){
+      if (event.key === 'rss_url') {
+        write_every_day_reminder.schedule_refresh();
+        write_every_day_reminder.update();
+      } else {
+        write_every_day_reminder.update_interface();
+      }
+    }, false);
+    
+    // clickable icon
+    chrome.browserAction.onClicked.addListener(function(tab) {
+      if (write_every_day_reminder.available) {
+        chrome.tabs.create({url: 'http://750words.com'});
+      } else {
+        chrome.tabs.create({url: 'options.html'});
+      }
+    });
+  }
+});
