@@ -8,6 +8,10 @@
     WriteEveryDayReminder.name = 'WriteEveryDayReminder';
 
     function WriteEveryDayReminder(options) {
+      var _this = this;
+      if (options == null) {
+        options = {};
+      }
       this.finished_today = __bind(this.finished_today, this);
 
       this.last_finished_date = __bind(this.last_finished_date, this);
@@ -30,37 +34,35 @@
 
       this.fetch_from_rss_url = __bind(this.fetch_from_rss_url, this);
 
-      var _this = this;
       this.version = '2.0.0';
       this.available = true;
       this.refresh_rate = options.refresh_rate || 30 * 60 * 1000;
       this.default_rss_url = options.default_rss_url || "http://750words.com/api/rss/[your id]";
-      this.a_day_of_seconds = 60 * 60 * 24;
+      this.a_day_of_seconds = 86400;
       this.refresh_timer = void 0;
       this.notification = void 0;
       document.addEventListener("DOMContentLoaded", function() {
         if ($(".options").length > 0) {
-          $(".save_button").click(_this.save_options);
-          _this.restore_options();
-          return setInterval((function() {
-            return this.update_advanced_info();
-          }), 10000);
+          $(".save_button").click(function() {
+            return _this.save_options();
+          });
+          return _this.restore_options();
         } else if ($(".notification").length > 0) {
-          $("#time_left").html("Less than " + (_this.time_left_today()) + " left to write today.");
+          $(".time_left").html("Less than " + (_this.time_left_today()) + " left to write today.");
           return $(document).click(window.close);
         } else {
           _this.schedule_refresh();
           _this.update();
           window.addEventListener("storage", (function(event) {
             if (event.key === "rss_url") {
-              this.schedule_refresh();
-              return this.update();
+              _this.schedule_refresh();
+              return _this.update();
             } else {
-              return this.update_interface();
+              return _this.update_interface();
             }
           }), false);
           return chrome.browserAction.onClicked.addListener(function(tab) {
-            if (this.available) {
+            if (_this.available) {
               return chrome.tabs.create({
                 url: "http://750words.com"
               });
@@ -97,25 +99,28 @@
       var finished_date, latest_item_description, regex, streak_array,
         _this = this;
       latest_item_description = $(data).find("rss channel item:first description").text();
-      if (latest_item_description.indexOf("finished") !== -1) {
-        regex = new RegExp("is on a (.*) day writing streak", "g");
-        streak_array = regex.exec(latest_item_description);
-        if (streak_array) {
-          localStorage["current_streak"] = parseInt(streak_array[1], 10);
-        } else {
-          localStorage["current_streak"] = "0";
-        }
-        finished_date = new Date($(data).find("rss channel item:first pubDate").text());
-        localStorage["last_finished_date"] = finished_date;
-        if (this.finished_today()) {
-          localStorage["progressed_today"] = "true";
-        } else {
-          localStorage["progressed_today"] = "false";
-        }
+      finished_date = new Date($(data).find("rss channel item:first pubDate").text());
+      localStorage["last_finished_date"] = finished_date;
+      if (this.finished_today()) {
+        localStorage["progressed_today"] = "true";
       } else {
         localStorage["progressed_today"] = "false";
       }
-      if (localStorage["show_notification"] === "true" || localStorage["progressed_today"] === "false") {
+      streak_array = void 0;
+      if (latest_item_description.indexOf("finished") !== -1) {
+        regex = new RegExp("is on a (.*) day writing streak", "g");
+        streak_array = regex.exec(latest_item_description);
+      }
+      if (streak_array) {
+        localStorage["current_streak"] = parseInt(streak_array[1], 10);
+      } else {
+        if (localStorage["progressed_today"] === "true") {
+          localStorage["current_streak"] = "1";
+        } else {
+          localStorage["current_streak"] = "0";
+        }
+      }
+      if (localStorage["show_notification"] === "true" && localStorage["progressed_today"] === "false") {
         this.notification = webkitNotifications.createHTMLNotification("notification.html");
         this.notification.show();
         setTimeout((function() {
@@ -195,7 +200,7 @@
 
     WriteEveryDayReminder.prototype.update_advanced_info = function() {
       var info;
-      info = "<br>            Last Finished Writing: " + (this.last_finished_date().fromNow()) + "            <br>            Finished Today: " + (this.finished_today() ? 'Yes' : 'No') + "            <br>            Time remaining today: " + (this.time_left_today()) + "            <br>            Current Streak: " + localStorage['current_streak'];
+      info = "<strong>Advanced Info:</strong>            <br>            Last Finished Writing: " + (this.last_finished_date().fromNow()) + "            <br>            Finished Today: " + (this.finished_today() ? 'Yes' : 'No') + "            <br>            Time remaining today: " + (this.time_left_today()) + "            <br>            Current Streak: " + localStorage['current_streak'];
       return $(".advanced_info").html(info);
     };
 
@@ -208,7 +213,7 @@
     };
 
     WriteEveryDayReminder.prototype.finished_today = function() {
-      return moment().eod().diff(moment(this.last_finished_date(), "seconds")) < this.a_day_of_seconds();
+      return moment().eod().diff(moment(this.last_finished_date()), "seconds") < this.a_day_of_seconds;
     };
 
     return WriteEveryDayReminder;

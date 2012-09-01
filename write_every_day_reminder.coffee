@@ -1,33 +1,31 @@
 class WriteEveryDayReminder
-  constructor: (options) ->
+  constructor: (options={}) ->
     @version = '2.0.0'
     @available = true
     @refresh_rate = options.refresh_rate || 30 * 60 * 1000 # default, once every half hour
     @default_rss_url = options.default_rss_url || "http://750words.com/api/rss/[your id]"
-    @a_day_of_seconds = 60 * 60 * 24
+    @a_day_of_seconds = 86400
     @refresh_timer = undefined
     @notification = undefined
 
-    # Events
+    # Initialize Chrome Events
     document.addEventListener "DOMContentLoaded", =>
-      if $(".options").length > 0
-        # Options
-        $(".save_button").click @save_options
+      if $(".options").length > 0 # Init for Options Page
+        $(".save_button").click => @save_options()
         @restore_options()
-        setInterval (->
-          @update_advanced_info()
-        ), 10000
-      else if $(".notification").length > 0
-        # Notification
-        $("#time_left").html "Less than #{@time_left_today()} left to write today."
+        # Update the advanced info every 10 seconds
+        #setInterval (=> @update_advanced_info() ), 10000
+
+      else if $(".notification").length > 0 # Init for Notification Page
+        $(".time_left").html("Less than #{@time_left_today()} left to write today.")
         $(document).click window.close
-      else
-        # Background
+
+      else # Init for Background Page
         @schedule_refresh()
         @update()
 
-        # listen_for_storage_updates
-        window.addEventListener "storage", ((event) ->
+        # Listen for local storage updates
+        window.addEventListener "storage", ((event) =>
           if event.key == "rss_url"
             @schedule_refresh()
             @update()
@@ -35,8 +33,8 @@ class WriteEveryDayReminder
             @update_interface()
         ), false
 
-        # clickable icon
-        chrome.browserAction.onClicked.addListener (tab) ->
+        # Clickable icon
+        chrome.browserAction.onClicked.addListener (tab) =>
           if @available
             chrome.tabs.create(url: "http://750words.com")
           else
@@ -60,29 +58,32 @@ class WriteEveryDayReminder
 
   rss_data_response: (data) =>
     latest_item_description = $(data).find("rss channel item:first description").text()
-    if latest_item_description.indexOf("finished") != -1 # did you actually finish or just get started?
 
-      # Streak
-      regex = new RegExp("is on a (.*) day writing streak", "g")
-      streak_array = regex.exec(latest_item_description)
+    finished_date = new Date($(data).find("rss channel item:first pubDate").text())
+    localStorage["last_finished_date"] = finished_date
 
-      if streak_array
-        localStorage["current_streak"] = parseInt(streak_array[1], 10)
-      else
-        localStorage["current_streak"] = "0"
-
-      finished_date = new Date($(data).find("rss channel item:first pubDate").text())
-      localStorage["last_finished_date"] = finished_date
-
-      if @finished_today() # did you finish within today?
-        localStorage["progressed_today"] = "true"
-      else
-        localStorage["progressed_today"] = "false"
+    if @finished_today() # did you finish within today?
+      localStorage["progressed_today"] = "true"
     else
       localStorage["progressed_today"] = "false"
 
+    # Streak
+    streak_array = undefined
+    if latest_item_description.indexOf("finished") != -1 # did you actually finish or just get started?
+      regex = new RegExp("is on a (.*) day writing streak", "g")
+      streak_array = regex.exec(latest_item_description)
+
+    if streak_array
+      localStorage["current_streak"] = parseInt(streak_array[1], 10)
+    else
+      if localStorage["progressed_today"] == "true"
+        localStorage["current_streak"] = "1"
+      else
+        localStorage["current_streak"] = "0"
+
+
     # Show notification
-    if localStorage["show_notification"] == "true" || localStorage["progressed_today"] == "false"
+    if localStorage["show_notification"] == "true" && localStorage["progressed_today"] == "false"
       @notification = webkitNotifications.createHTMLNotification("notification.html")
       @notification.show()
       setTimeout (=> @notification.cancel() ), 10000
@@ -138,7 +139,8 @@ class WriteEveryDayReminder
 
 
   update_advanced_info: =>
-    info = "<br>
+    info = "<strong>Advanced Info:</strong>
+            <br>
             Last Finished Writing: #{@last_finished_date().fromNow()}
             <br>
             Finished Today: #{if @finished_today() then 'Yes' else 'No'}
@@ -153,13 +155,13 @@ class WriteEveryDayReminder
     moment.duration(moment().eod().diff(moment(), "seconds"), "seconds").humanize()
 
 
-  #return moment().eod().diff(moment(), 'hours') + ' hours ' + moment().eod().diff(moment(), 'minutes') + ' minutes'
   last_finished_date: =>
     moment(new Date(localStorage["last_finished_date"]))
 
 
   finished_today: =>
-    moment().eod().diff(moment(@last_finished_date(), "seconds")) < @a_day_of_seconds()
+    # As in: (midnight today - last_finished_date ) < a_day_of_seconds
+    moment().eod().diff(moment(@last_finished_date()), "seconds") < @a_day_of_seconds
 
 
 window.write_every_day_reminder = new WriteEveryDayReminder

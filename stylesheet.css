@@ -4,16 +4,38 @@ h1, div {
   padding-bottom: 10px;
 }
 
-.title {
+.notification .icon {
+  float:left;
+  padding: 5px 10px 5px 10px;
+}
+
+.notification h1 {
+  color: #002c00;
+  padding-bottom: 5px;
+}
+
+.notification .time_left {
+  color: #008040;
+}
+
+.options .title {
   border-bottom: 1px solid #ddd;
 }
 
-#status{
+.options .status {
   text-align: center;
   color: #999;
 }
 
-.bottom {
+.options .bottom {
   position: absolute;
   bottom: 10px;
+}
+
+.options .advanced_info {
+  color: #ddd;
+}
+
+.options .advanced_info:hover {
+  color: #000;
 }
