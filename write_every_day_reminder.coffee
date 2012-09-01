@@ -1,5 +1,6 @@
 class WriteEveryDayReminder
   constructor: (options) ->
+    @version = '2.0.0'
     @available = true
     @refresh_rate = options.refresh_rate || 30 * 60 * 1000 # default, once every half hour
     @default_rss_url = options.default_rss_url || "http://750words.com/api/rss/[your id]"
@@ -110,7 +111,7 @@ class WriteEveryDayReminder
 
   schedule_refresh: =>
     clearInterval(@refresh_timer) if @refresh_timer
-    @refresh_timer = setInterval (=> @update() ), @refresh_rate)
+    @refresh_timer = setInterval (=> @update() ), @refresh_rate
 
 
   update: =>
