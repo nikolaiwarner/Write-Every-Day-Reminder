@@ -70,13 +70,13 @@ class WriteEveryDayReminder
     # Streak
     streak_array = undefined
     if latest_item_description.indexOf("finished") != -1 # did you actually finish or just get started?
-      regex = new RegExp("is on a (.*) day writing streak", "g")
+      regex = new RegExp('img title="(.*) day streak"', "g")
       streak_array = regex.exec(latest_item_description)
 
     if streak_array
       localStorage["current_streak"] = parseInt(streak_array[1], 10)
     else
-      if localStorage["progressed_today"] == "true"
+      if localStorage["progressed_today"] == "true" || @finished_yesterday()
         localStorage["current_streak"] = "1"
       else
         localStorage["current_streak"] = "0"
@@ -141,13 +141,15 @@ class WriteEveryDayReminder
   update_advanced_info: =>
     info = "<strong>Advanced Info:</strong>
             <br>
-            Last Finished Writing: #{@last_finished_date().fromNow()}
+            Last finished writing: #{@last_finished_date().fromNow()}
             <br>
-            Finished Today: #{if @finished_today() then 'Yes' else 'No'}
+            Finished yesterday: #{if @finished_yesterday() then 'Yes' else 'No'}
+            <br>
+            Finished today: #{if @finished_today() then 'Yes' else 'No'}
             <br>
             Time remaining today: #{@time_left_today()}
             <br>
-            Current Streak: #{localStorage['current_streak']}"
+            Current streak: #{localStorage['current_streak']}"
     $(".advanced_info").html(info)
 
 
@@ -163,6 +165,10 @@ class WriteEveryDayReminder
     # As in: (midnight today - last_finished_date ) < a_day_of_seconds
     moment().eod().diff(moment(@last_finished_date()), "seconds") < @a_day_of_seconds
 
+  finished_yesterday: =>
+    # As in: (midnight today - last_finished_date ) < a_day_of_seconds
+    console.log moment().eod().diff(moment(@last_finished_date()), "seconds"), (@a_day_of_seconds * 2), moment().eod().diff(moment(@last_finished_date()), "seconds") < (@a_day_of_seconds * 2)
+    moment().eod().diff(moment(@last_finished_date()), "seconds") < (@a_day_of_seconds * 2)
 
 window.write_every_day_reminder = new WriteEveryDayReminder
 

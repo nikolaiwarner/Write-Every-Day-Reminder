@@ -12,6 +12,8 @@
       if (options == null) {
         options = {};
       }
+      this.finished_yesterday = __bind(this.finished_yesterday, this);
+
       this.finished_today = __bind(this.finished_today, this);
 
       this.last_finished_date = __bind(this.last_finished_date, this);
@@ -108,13 +110,13 @@
       }
       streak_array = void 0;
       if (latest_item_description.indexOf("finished") !== -1) {
-        regex = new RegExp("is on a (.*) day writing streak", "g");
+        regex = new RegExp('img title="(.*) day streak"', "g");
         streak_array = regex.exec(latest_item_description);
       }
       if (streak_array) {
         localStorage["current_streak"] = parseInt(streak_array[1], 10);
       } else {
-        if (localStorage["progressed_today"] === "true") {
+        if (localStorage["progressed_today"] === "true" || this.finished_yesterday()) {
           localStorage["current_streak"] = "1";
         } else {
           localStorage["current_streak"] = "0";
@@ -200,7 +202,7 @@
 
     WriteEveryDayReminder.prototype.update_advanced_info = function() {
       var info;
-      info = "<strong>Advanced Info:</strong>            <br>            Last Finished Writing: " + (this.last_finished_date().fromNow()) + "            <br>            Finished Today: " + (this.finished_today() ? 'Yes' : 'No') + "            <br>            Time remaining today: " + (this.time_left_today()) + "            <br>            Current Streak: " + localStorage['current_streak'];
+      info = "<strong>Advanced Info:</strong>            <br>            Last finished writing: " + (this.last_finished_date().fromNow()) + "            <br>            Finished yesterday: " + (this.finished_yesterday() ? 'Yes' : 'No') + "            <br>            Finished today: " + (this.finished_today() ? 'Yes' : 'No') + "            <br>            Time remaining today: " + (this.time_left_today()) + "            <br>            Current streak: " + localStorage['current_streak'];
       return $(".advanced_info").html(info);
     };
 
@@ -214,6 +216,11 @@
 
     WriteEveryDayReminder.prototype.finished_today = function() {
       return moment().eod().diff(moment(this.last_finished_date()), "seconds") < this.a_day_of_seconds;
+    };
+
+    WriteEveryDayReminder.prototype.finished_yesterday = function() {
+      console.log(moment().eod().diff(moment(this.last_finished_date()), "seconds"), this.a_day_of_seconds * 2, moment().eod().diff(moment(this.last_finished_date()), "seconds") < (this.a_day_of_seconds * 2));
+      return moment().eod().diff(moment(this.last_finished_date()), "seconds") < (this.a_day_of_seconds * 2);
     };
 
     return WriteEveryDayReminder;
