@@ -20,4 +20,4 @@ A Chrome extension to remind you to write every day on 750words.com.
 
 ## Someday Maybe
 
-* A streak count display
+* Reliable streak count display

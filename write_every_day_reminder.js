@@ -44,13 +44,15 @@
       this.refresh_timer = void 0;
       this.notification = void 0;
       document.addEventListener("DOMContentLoaded", function() {
+        var message;
         if ($(".options").length > 0) {
           $(".save_button").click(function() {
             return _this.save_options();
           });
           return _this.restore_options();
         } else if ($(".notification").length > 0) {
-          $(".time_left").html("Less than " + (_this.time_left_today()) + " left to write today.");
+          message = "<b>Time remaining: " + (_this.time_left_today()) + "</b>                   <br>                   Last finished writing: " + (_this.last_finished_date().fromNow()) + "                  ";
+          $(".time_left").html(message);
           return $(document).click(window.close);
         } else {
           _this.schedule_refresh();
@@ -108,19 +110,19 @@
       } else {
         localStorage["progressed_today"] = "false";
       }
-      streak_array = void 0;
-      if (latest_item_description.indexOf("finished") !== -1) {
-        regex = new RegExp('img title="(.*) day streak"', "g");
-        streak_array = regex.exec(latest_item_description);
-      }
-      if (streak_array) {
-        localStorage["current_streak"] = parseInt(streak_array[1], 10);
-      } else {
-        if (localStorage["progressed_today"] === "true" || this.finished_yesterday()) {
-          localStorage["current_streak"] = "1";
-        } else {
-          localStorage["current_streak"] = "0";
+      if (localStorage["progressed_today"] === "true" || this.finished_yesterday()) {
+        streak_array = void 0;
+        if (latest_item_description.indexOf("finished") !== -1) {
+          regex = new RegExp('img title="(.*) day streak"', "g");
+          streak_array = regex.exec(latest_item_description);
         }
+        if (streak_array) {
+          localStorage["current_streak"] = parseInt(streak_array[1], 10);
+        } else {
+          localStorage["current_streak"] = "";
+        }
+      } else {
+        localStorage["current_streak"] = "0";
       }
       if (localStorage["show_notification"] === "true" && localStorage["progressed_today"] === "false") {
         this.notification = webkitNotifications.createHTMLNotification("notification.html");
@@ -219,7 +221,6 @@
     };
 
     WriteEveryDayReminder.prototype.finished_yesterday = function() {
-      console.log(moment().eod().diff(moment(this.last_finished_date()), "seconds"), this.a_day_of_seconds * 2, moment().eod().diff(moment(this.last_finished_date()), "seconds") < (this.a_day_of_seconds * 2));
       return moment().eod().diff(moment(this.last_finished_date()), "seconds") < (this.a_day_of_seconds * 2);
     };
 
